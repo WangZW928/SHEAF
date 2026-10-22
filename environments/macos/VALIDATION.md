@@ -40,3 +40,19 @@ SHEAF 基础提交：`6e5abd8`，加本次 Mac 环境兼容修改。
 已改为快照失败即停止，并通过 `test_snapshot.py` 的 4 项回归检查以及完整
 隔离 smoke 流程。AI worker 保留沙箱，Git 构建由单独获准的 launcher 步骤完成。
 此结果验证单会话、单目标通路；未覆盖多 Agent 并发和 Linux/bwrap comparator。
+
+## 后续实际双 Agent 并发测试
+
+2026-10-22，在 `demo-macos-concurrent/` 完成两个真实 Codex 会话的最小并发流程。
+两组从同一队列分别领取自然数加零、乘一两个独立目标，在各自沙箱编译和审查，
+然后同步调用真实 `tools/land.sh`。会话运行重叠 302.091 秒，落库调用重叠 0.755 秒。
+落库前两份不同 claim 同时存在，两次重复领取探测均正确被拒绝。
+
+最终统一构建为 GREEN，提交 `a3a70579c9257e561106a8e0f341c57dd307aa7f`，
+一次验证两个 landing。锁定 Challenge 哈希不变，两个目标类型均匹配，
+解答无 sorry，两个目标均无任何公理依赖。队列、claims 和待构建请求清空，
+两个会话正常退出。本次未发现需要修改 SHEAF 工具的问题。
+
+完整证据留在本地 demo 的 `local/result.md` 和 `local/acceptance.json`。
+此结果限于 macOS 单机、双 worker、单轮；未覆盖压力测试、故障恢复、跨机器同步、
+Windows、真实论文或 Linux/bwrap comparator。详细 demo 被主仓库忽略，未推送。
