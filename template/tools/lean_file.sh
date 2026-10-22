@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Compile one Lean file, with 2 threads and a time limit.
 # Usage: SHEAF_GROUP=<group> tools/lean_file.sh <file.lean>
 #
@@ -22,12 +22,18 @@ refresh_mirror() {
     [ -e "$s" ] && [ "$s" -nt "$own" ] && ln -sf "$s" "$own"
   done < <(find "$M" -type f \( -name '*.olean' -o -name '*.ilean' \) 2>/dev/null)
   find "$M" -xtype l -delete 2>/dev/null
-  for x in "$SHEAF_BUILD"/*; do [ -e "$x" ] && ionice -c3 cp -asn "$x" "$M/" 2>/dev/null; done
+  local io_priority=()
+  # ionice is Linux-only; macOS still uses the same GNU cp mirror operation.
+  command -v ionice >/dev/null 2>&1 && io_priority=(ionice -c3)
+  for x in "$SHEAF_BUILD"/*; do
+    [ -e "$x" ] || continue
+    "${io_priority[@]}" cp -asn "$x" "$M/" || return
+  done
   touch "$M/.stamp"
 }
 if [ -n "${SHEAF_GROUP:-}" ]; then
   M="$SHEAF_ROOT/local/build/$SHEAF_GROUP"
-  refresh_mirror
+  refresh_mirror || exit 2
   LP=${LP//$SHEAF_BUILD/$M}
   case "$F" in
     "$SHEAF_LEAN"/.sandbox/*) ;;
@@ -38,7 +44,7 @@ fi
 compile() {
   local n=0
   while [ -e "$SHEAF_ROOT/local/PUBLISHING" ] && [ $n -lt 60 ]; do sleep 2; n=$((n + 1)); done
-  [ -n "${SHEAF_GROUP:-}" ] && refresh_mirror
+  if [ -n "${SHEAF_GROUP:-}" ]; then refresh_mirror || return 2; fi
   [ ${#OUT[@]} -gt 0 ] && rm -f "${OUT[1]}" "${OUT[3]}"
   ( cd "$SHEAF_LEAN" && LEAN_PATH="$LP" timeout "${SHEAF_FILE_TIMEOUT:-60}" env LEAN_NUM_THREADS=2 nice -n 19 \
       lean -R "$SHEAF_LEAN" "${OUT[@]}" "$F" )

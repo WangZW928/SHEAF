@@ -2,6 +2,12 @@
 
 Small scripts for the few things that must be done exactly: compiling against the shared build, changing the shared library safely, building it, and checking the targets. How to do the mathematics is up to the agents; nothing here decides it.
 
+Runtime: Python 3.12+, Bash 4+, GNU coreutils/findutils/grep, rsync, tmux, and
+the project's pinned Lean/Lake. On macOS, launch commands through the SHEAF
+repository's `environments/macos/run.sh`; it selects Homebrew Bash and GNU tools
+without changing the user's shell profile. `ionice` is optional on macOS.
+See `environments/macos/README.md` in the SHEAF checkout for installation and checks.
+
 What must hold, and why, is written in `AGENTS.md` §3 and in the role documents. The scripts are one way to carry it out. The usage of each script is in the comment at its top.
 
 ## Changing the tools
@@ -77,6 +83,12 @@ A single-file compile of a module cannot show its effect on other modules, becau
 The global build never compiles the tree the groups work in. `build.py` builds a copy, `local/buildtree/`, and brings the compiled files back, so nothing is frozen while it runs, a failed build leaves the groups' compiled files untouched, and a build can be stopped at any moment without harm. The copy shares `lean/.lake/packages` through a link and holds its own build output.
 
 The groups and the build talk through records in `local/builds/`, the way claims are files in `coord/claims/`:
+
+The maintainer needs write access to the project's Git metadata as well as its
+source tree. A failed `git add`, index update, commit or commit-ID lookup stops
+the snapshot; the build must not publish a green result with `HEAD` in place of
+a real commit. With sandboxed AI workers on macOS, run the maintainer build as a
+separately authorized operation when the worker sandbox protects `.git`.
 
 | Record | Written by | Meaning |
 |---|---|---|

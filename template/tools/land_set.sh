@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Land a set of files at once. This is how a changed statement or definition lands, together with the modules
 # adapted to it.
 # Usage: SHEAF_GROUP=<group> tools/land_set.sh <set directory>

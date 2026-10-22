@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # List the definitions that may be hollow: definitions, abbreviations, instances and opaque constants of the library
 # that depend on `sorryAx` in any way. The list is of candidates. A definition that only refers to an unproved named
 # theorem for a proof it needs is on the list and is not hollow; read each one and decide (AGENTS.md §5).

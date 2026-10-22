@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Check that every target statement in the library is exactly the one locked in lean/Challenge.lean.
 # Usage: tools/target_types.sh check
 # The target names are the theorems of lean/Challenge.lean. The script elaborates each target once under `Challenge` and

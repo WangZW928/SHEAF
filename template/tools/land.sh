@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Land one file from a sandbox into the library.
 # Usage: SHEAF_GROUP=<group> tools/land.sh <sandbox file> <library file>
 #

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Report the state of every tmux session of this project (for the launcher).
 # Usage: tools/session_health.sh
 # A session belongs to the project when it was started in the project directory (`tmux new-session -c <project directory>`).

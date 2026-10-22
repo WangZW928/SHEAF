@@ -1,0 +1,15 @@
+{
+  "folders": [{ "name": "SHEAF (macOS)", "path": "../.." }],
+  "settings": {
+    "lean4.envPathExtensions": ["environments/macos/editor-bin"],
+    "terminal.integrated.profiles.osx": {
+      "SHEAF macOS": {
+        "path": "/bin/bash",
+        "args": ["${workspaceFolder}/environments/macos/run.sh"]
+      }
+    },
+    "terminal.integrated.defaultProfile.osx": "SHEAF macOS",
+    "files.watcherExclude": { "**/.local/**": true }
+  },
+  "extensions": { "recommendations": ["leanprover.lean4"] }
+}

@@ -46,14 +46,22 @@ def run(cmd, **kw):
     return subprocess.run(cmd, capture_output=True, text=True, **kw)
 
 
+def snapshot_git(args, repo):
+    result = run(["git", *args], cwd=repo)
+    if result.returncode != 0:
+        detail = (result.stderr or result.stdout).strip()
+        raise SystemExit(f"Cannot snapshot: git {args[0]} failed: {detail}")
+    return result.stdout.strip()
+
+
 def commit_tree(inflight: list[dict]):
     """Commit the repository holding the Lean sources, with the previous version of every file of the landings held
     back (newest first, so that the oldest previous version of a file is the one that stays)."""
     top = run(["git", "-C", str(li.LEAN), "rev-parse", "--show-toplevel"])
     if top.returncode != 0:
-        return None
+        raise SystemExit("Cannot snapshot: Lean sources must be inside a writable Git repository.\n" + top.stderr.strip())
     repo = pathlib.Path(top.stdout.strip())
-    run(["git", "add", "-A"], cwd=repo)
+    snapshot_git(["add", "-A"], repo)
     for r in inflight:
         for f in r["files"]:
             try:
@@ -62,14 +70,19 @@ def commit_tree(inflight: list[dict]):
                 continue
             bk = ld.BACKUP / r["id"] / f["path"]
             if f["existed"]:
-                h = run(["git", "hash-object", "-w", str(bk)], cwd=repo).stdout.strip()
-                run(["git", "update-index", "--add", "--cacheinfo", f"100644,{h},{rel}"], cwd=repo)
+                h = snapshot_git(["hash-object", "-w", str(bk)], repo)
+                snapshot_git(["update-index", "--add", "--cacheinfo", f"100644,{h},{rel}"], repo)
             else:
-                run(["git", "update-index", "--force-remove", rel], cwd=repo)
-    c = run(["git", "commit", "-q", "-m", f"build {ld.now()}"], cwd=repo)
-    if c.returncode != 0 and "nothing to commit" not in c.stdout + c.stderr and "nothing added" not in c.stdout + c.stderr:
-        print("warning: git commit failed: " + (c.stderr or c.stdout).strip().split("\n")[0])
-    return run(["git", "rev-parse", "HEAD"], cwd=repo).stdout.strip() or None
+                snapshot_git(["update-index", "--force-remove", rel], repo)
+    changed = run(["git", "diff", "--cached", "--quiet", "--exit-code"], cwd=repo)
+    if changed.returncode == 1:
+        snapshot_git(["commit", "-q", "-m", f"build {ld.now()}"], repo)
+    elif changed.returncode != 0:
+        raise SystemExit("Cannot snapshot: git diff failed: " + changed.stderr.strip())
+    commit = snapshot_git(["rev-parse", "--verify", "HEAD^{commit}"], repo)
+    if not re.fullmatch(r"[0-9a-f]{40}|[0-9a-f]{64}", commit):
+        raise SystemExit("Cannot snapshot: Git did not return a valid commit ID.")
+    return commit
 
 
 def seed_copy():
