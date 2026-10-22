@@ -15,8 +15,8 @@ Agent systems such as Claude Code and Codex can now formalize any mathematical c
 
 For platform dependencies and verified setup instructions, see
 [platform environments](environments/README.md), including the
-[macOS environment](environments/macos/README.md). Windows has a separate reserved
-configuration directory and has not yet been tested.
+[macOS environment](environments/macos/README.md). Windows runs under WSL2; see the
+[Windows environment](environments/windows/README.md).
 
 Clone this repository and start an agent in the root of the clone: Claude Code, Codex or any other. Start it inside tmux, because it watches over the project for the whole run and must keep running after you close your terminal. Then talk to it; it reads [`AGENTS.md`](AGENTS.md) and guides you from there. Each project it creates lives in a directory of its own here, which is a git repository that you can publish under your own account.
 
